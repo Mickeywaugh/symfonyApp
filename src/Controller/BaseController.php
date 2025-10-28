@@ -33,7 +33,7 @@ class BaseController extends AbstractController
 
     public function critial(string $msg = "Critial Error", array $data = []): JsonResponse
     {
-        Logger::critical($msg);
+        Logger::critical($msg, $data);
         return new JsonResponse([
             'code' => 502,
             'msg' => $msg,

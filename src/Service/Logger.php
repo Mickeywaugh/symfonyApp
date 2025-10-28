@@ -8,13 +8,13 @@ use Monolog\Handler\StreamHandler;
 
 class Logger
 {
-  public static function __callStatic(string $method, array $arguments)
+  public static function __callStatic(string $method, array $arguments): void
   {
     $logger = new Monologer('app');
     $logfile = $arguments[2] ?? "log";
     unset($arguments[2]);
     $logger->pushHandler(new StreamHandler(sprintf("%s/../../var/log/%s.log", __DIR__, $logfile), Level::Info));
-    return $logger->{$method}(...$arguments);
+    $logger->{$method}(...$arguments);
   }
 
   private static function debugBackTrace(string &$msg): void
@@ -37,7 +37,7 @@ class Logger
 
   public static function log($msg, array $context = [], string $logFile = "log"): void
   {
-    self::__callStatic("log", [$msg, $context, $logFile]);
+    self::__callStatic("info", [$msg, $context, $logFile]);
   }
 
   public static function error($msg, array $context = [], string $logFile = "log"): void

@@ -6,6 +6,7 @@ use App\Kernel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+
 class BaseService
 {
     public static $INITIALPASSWORD = "123456";
@@ -36,7 +37,7 @@ class BaseService
 
     public static function criticalResponse(string $msg, $data = null): JsonResponse
     {
-        Logger::critical($msg);
+        Logger::critical($msg, $data);
         return new JsonResponse([
             'code' => 502,
             'msg' => $msg,
