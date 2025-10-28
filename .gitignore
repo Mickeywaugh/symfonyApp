@@ -8,6 +8,6 @@
 /var/
 /vendor/
 /bin/console
-/symfony.lock
-/composer.lock
+symfony.lock
+composer.lock
 ###< symfony/framework-bundle ###
