@@ -1,5 +1,5 @@
 本项目为个人常用的symfony框架项目库。
-1. Symfony 7.3.4 + Doctrine 3.5.x;
+1. Symfony 7.3.x + Doctrine 3.5.x;
 2. 封装了BaseCommand 基类，实现命令行功能，基本的start/stop操作外，还支持自定义方法；
 3. 封装了BaseController基类，success/error方法，实现ajax返回数据功能.
 4. 封装了BaseEntity基类,Entity继承此类,可以使用一些快捷方法来设置属性和将属性转换成数组;
