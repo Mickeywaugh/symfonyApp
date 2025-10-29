@@ -34,6 +34,16 @@ trait CUTime
         }
     }
 
+    public function setCreateTime(?\DateTimeInterface $createTime = new DateTimeImmutable()): static
+    {
+        $this->createTime = $createTime;
+        return $this;
+    }
+
+    /**
+     * @param bool $object 返回对象还是字符串
+     * @return null|string|DateTimeInterface
+     */
     public function getCreateTime(bool $object = false): null|string|\DateTimeInterface
     {
         if (property_exists($this, 'createTime')) {
@@ -43,11 +53,17 @@ trait CUTime
         }
     }
 
-    public function setCreateTime(?\DateTimeInterface $createTime = new DateTimeImmutable()): static
+
+    public function setUpdateTime(?\DateTimeInterface $updateTime = new DateTimeImmutable()): static
     {
-        $this->createTime = $createTime;
+        $this->updateTime = $updateTime;
         return $this;
     }
+
+    /**
+     * @param bool $object 返回对象还是字符串
+     * @return null|string|DateTimeInterface
+     */
     public function getUpdateTime(bool $object = false): null| string|\DateTimeInterface
     {
         if (property_exists($this, 'updateTime')) {
@@ -55,11 +71,5 @@ trait CUTime
         } else {
             return null;
         }
-    }
-
-    public function setUpdateTime(?\DateTimeInterface $updateTime = new DateTimeImmutable()): static
-    {
-        $this->updateTime = $updateTime;
-        return $this;
     }
 }
