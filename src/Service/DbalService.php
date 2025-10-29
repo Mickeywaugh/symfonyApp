@@ -17,7 +17,7 @@ class DbalService
   protected $isLogSql = true;
 
   // 支持的查询方法
-  protected $expr = [
+  protected $exprs = [
     '=',
     '<>',
     '>',
@@ -160,6 +160,10 @@ class DbalService
     }
     return $this;
   }
+
+  /**
+   * @param array $where 查询条件 eg:["fieldName1"=>["LIKE"=>"keyword"],"fileName2"=>"value2"]
+   */
   public function wheres(array $where): static
   {
     if (empty($where)) return $this;
@@ -168,13 +172,13 @@ class DbalService
       $paramName = sprintf("value%d", $this->whereCounter);
       $start = sprintf("start%d",  $this->whereCounter);
       $end = sprintf("end%d",  $this->whereCounter);
-      //判断$where的数组的结构，只支持key=>value的形式, 如果value为数组，则认为是非精确查询条件，默认为数组第1个元素为操作符，数组第2个元素为匹配条件
+      //判断$where的数组的结构，只支持key=>value的形式, 如果value为数组(单元素)，则认为是非精确查询条件，默认为数组第1个元素Key为操作符，value为匹配条件
       $rfield = self::toSnakeCase($field);
       if (is_array($expr)) {
         $op = strtoupper(key($expr));
         $condition = current($expr);
-        if (!in_array($op, $this->expr)) {
-          //如果操作符不在$this->expr数组中，则默认为精确查询
+        if (!in_array($op, $this->exprs)) {
+          //如果操作符不在$this->exprs数组中，则默认为精确查询
           $this->setQbWhere("$rfield = :$paramName")->setParameter($paramName, $condition);
         } else {
           switch ($op) {

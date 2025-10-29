@@ -5,15 +5,20 @@ namespace App\Service;
 use Monolog\Level;
 use Monolog\Logger as Monologer;
 use Monolog\Handler\StreamHandler;
+use Monolog\Formatter\LineFormatter;
 
 class Logger
 {
   public static function __callStatic(string $method, array $arguments): void
   {
-    $logger = new Monologer('app');
-    $logfile = $arguments[2] ?? "app";
+    $channel = $arguments[2] ?? "app";
+    $logger = new Monologer($channel);
     unset($arguments[2]);
-    $logger->pushHandler(new StreamHandler(sprintf("%s/../../var/log/%s.log", __DIR__, $logfile), Level::Info));
+    $handler = new StreamHandler(sprintf("%s/var/log/%s.log", BaseService::getProjectDir(), $channel), Level::Info);
+    $formatter = new LineFormatter(null, null, true, true);
+    $formatter->ignoreEmptyContextAndExtra(true);
+    $handler->setFormatter($formatter);
+    $logger->pushHandler($handler);
     $logger->{$method}(...$arguments);
   }
 
@@ -35,46 +40,26 @@ class Logger
     $msg = sprintf("%s=>%s", $msg, $callerInfo);
   }
 
-  /**
-   * @param string $msg 日志信息
-   * @param array $context 日志上下文
-   * @param string $logFile 日志文件名
-   */
-  public static function log($msg, array $context = [], string $logFile = "app"): void
+  public static function log($msg, array $context = [], string $channel = "app"): void
   {
-    self::__callStatic("info", [$msg, $context, $logFile]);
+    self::__callStatic("info", [$msg, $context, $channel]);
   }
 
-  /**
-   * @param string $msg 日志信息
-   * @param array $context 日志上下文
-   * @param string $logFile 日志文件名
-   */
-  public static function error($msg, array $context = [], string $logFile = "app"): void
+  public static function error($msg, array $context = [], string $channel = "app"): void
   {
     self::debugBackTrace($msg);
-    self::__callStatic("error", [$msg, $context, $logFile]);
+    self::__callStatic("error", [$msg, $context, $channel]);
   }
 
-  /**
-   * @param string $msg 日志信息
-   * @param array $context 日志上下文
-   * @param string $logFile 日志文件名
-   */
-  public static function debug($msg, array $context = [], string $logFile = "app"): void
+  public static function debug($msg, array $context = [], string $channel = "app"): void
   {
     self::debugBackTrace($msg);
-    self::__callStatic("debug", [$msg, $context, $logFile]);
+    self::__callStatic("debug", [$msg, $context, $channel]);
   }
 
-  /**
-   * @param string $msg 日志信息
-   * @param array $context 日志上下文
-   * @param string $logFile 日志文件名
-   */
-  public static function critical($msg, array $context = [], string $logFile = "app"): void
+  public static function critical($msg, array $context = [], string $channel = "app"): void
   {
     self::debugBackTrace($msg);
-    self::__callStatic("critical", [$msg, $context, $logFile]);
+    self::__callStatic("critical", [$msg, $context, $channel]);
   }
 }
