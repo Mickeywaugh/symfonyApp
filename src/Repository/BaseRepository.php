@@ -456,6 +456,10 @@ abstract class BaseRepository extends ServiceEntityRepository
         return $this;
     }
 
+    /**
+     * @param array $where eg:["fieldName1"=>["LIKE"=>"keyword"],"fileName2"=>"value2"]
+     * @return $this
+     */
     public function wheres(array $where): self
     {
         if (empty($where)) return $this;
@@ -464,14 +468,14 @@ abstract class BaseRepository extends ServiceEntityRepository
             $paramName = sprintf("value%d", $this->whereCounter);
             $start = sprintf("start%d",  $this->whereCounter);
             $end = sprintf("end%d",  $this->whereCounter);
-            //判断$where的数组的结构，只支持key=>value的形式, 如果value为数组，则认为是非精确查询条件，默认为数组第1个元素为操作符，数组第2个元素为匹配条件
+            //判断$where的数组的结构，只支持key=>value的形式, 
             $rfield = self::rebuildField($field);
-            if (is_array($expr)) {
-                list($op, $condtion) = $expr;
-                $op = strtoupper($op);
+            if (is_array($expr)) { //$expr为单个数组,
+                $op = strtoupper(key($expr));
+                $condition = current($expr);
                 if (!in_array($op, $this->expr)) {
                     //如果操作符不在$this->expr数组中，则默认为精确查询
-                    $this->setQbWhere("$rfield = :$paramName")->setParameter($paramName, $condtion);
+                    $this->setQbWhere("$rfield = :$paramName")->setParameter($paramName, $condition);
                 } else {
                     switch ($op) {
                         case "NULL":
@@ -487,42 +491,42 @@ abstract class BaseRepository extends ServiceEntityRepository
                                 $field = self::rebuildField($field);
                                 $orX->add($this->qb->expr()->like("$field", ":$paramName"));
                             }
-                            $this->setQbWhere($orX)->setParameter($paramName, "%" . $condtion . "%");
+                            $this->setQbWhere($orX)->setParameter($paramName, "%" . $condition . "%");
                             break;
                         case "NOT_LIKE":
                             $this->setQbWhere($this->qb->expr()->notLike("$rfield", ":$paramName"))
-                                ->setParameter($paramName, "%" . $condtion . "%");
+                                ->setParameter($paramName, "%" . $condition . "%");
                             break;
                         case "IN":
                             $this->setQbWhere($this->qb->expr()->in("$rfield", ":$paramName"))
-                                ->setParameter($paramName, $condtion);
+                                ->setParameter($paramName, $condition);
                             break;
                         case "NOT_IN":
                             $this->setQbWhere($this->qb->expr()->notIn("$rfield", ":$paramName"))
-                                ->setParameter($paramName, $condtion);
+                                ->setParameter($paramName, $condition);
                             break;
                         case "FIND_IN":
                             $this->setQbWhere("FIND_IN_SET(:$paramName, $rfield)")
-                                ->setParameter($paramName, $condtion);
+                                ->setParameter($paramName, $condition);
                             break;
                         case "BETWEEN":
                             $subQb = $this->qb->expr()->between("$rfield", ":$start", ":$end");
-                            $this->setQbWhere($subQb)->setParameter($start, $condtion[0])->setParameter($end, $condtion[1]);
+                            $this->setQbWhere($subQb)->setParameter($start, $condition[0])->setParameter($end, $condition[1]);
                             break;
                         case "NOT_BETWEEN":
                             $subQb = $this->qb->expr()->orX($this->qb->expr()->lt("$rfield", ":$start"), $this->qb->expr()->gt("$rfield", ":$end"));
-                            $this->setQbWhere($subQb)->setParameter("$start", $condtion[0])->setParameter($end, $condtion[1]);
+                            $this->setQbWhere($subQb)->setParameter("$start", $condition[0])->setParameter($end, $condition[1]);
                             break;
                         case "OR":
-                            // $condtion为数组,循环添加or操作
-                            foreach ($condtion as $orVal) {
+                            // $condition为数组,循环添加or操作
+                            foreach ($condition as $orVal) {
                                 $paramName = sprintf("value%d", $this->whereCounter);
                                 $this->qb->orWhere("$rfield = :$paramName")->setParameter($paramName, $orVal);
                                 $this->whereCounter++;
                             }
                             break;
                         default:
-                            $this->setQbWhere("$rfield $op :$paramName")->setParameter($paramName, $condtion);
+                            $this->setQbWhere("$rfield $op :$paramName")->setParameter($paramName, $condition);
                             break;
                     }
                 }
@@ -770,7 +774,11 @@ abstract class BaseRepository extends ServiceEntityRepository
         }
     }
 
-    // flush实体至数据库
+    /**
+     * flush实体至数据库
+     * @param array $entities 数组或单个实体
+     * @return bool
+     */
     public function flush($entities)
     {
         if (!$this->em->isOpen()) {
@@ -799,6 +807,10 @@ abstract class BaseRepository extends ServiceEntityRepository
         }
     }
 
+
+    /**
+     * 打开debug模式
+     */
     public function debug(bool $sql = true): static
     {
         $this->debug = true;
@@ -806,6 +818,9 @@ abstract class BaseRepository extends ServiceEntityRepository
         return $this;
     }
 
+    /**
+     * 打印sql还是dql
+     */
     private function logSql($qb = null): static
     {
         if (!$qb) {

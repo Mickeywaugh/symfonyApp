@@ -5,15 +5,24 @@ namespace App\Service;
 use Monolog\Level;
 use Monolog\Logger as Monologer;
 use Monolog\Handler\StreamHandler;
+use Monolog\Formatter\LineFormatter;
 
 class Logger
 {
   public static function __callStatic(string $method, array $arguments): void
   {
-    $logger = new Monologer('app');
-    $logfile = $arguments[2] ?? "log";
+    $channel = $arguments[2] ?? "app";
+    $logger = new Monologer($channel);
     unset($arguments[2]);
-    $logger->pushHandler(new StreamHandler(sprintf("%s/../../var/log/%s.log", __DIR__, $logfile), Level::Info));
+    $stackTraces = $arguments[3] ?? false;
+    if ($stackTraces) {
+      self::debugBackTrace($arguments[0]);
+    }
+    $handler = new StreamHandler(sprintf("%s/var/log/%s.log", BaseService::getProjectDir(), $channel), Level::Info);
+    $formatter = new LineFormatter(null, null, false, true);
+    // $formatter->ignoreEmptyContextAndExtra(true);
+    $handler->setFormatter($formatter);
+    $logger->pushHandler($handler);
     $logger->{$method}(...$arguments);
   }
 
@@ -28,33 +37,30 @@ class Logger
         $index,
         basename($frame['file']),
         $frame['line'],
-        $frame['function'] ?? 'main'
+        $frame['function'] ?? 'index'
       );
     }
     $callerInfo = implode(" -> ", $callerInfo);
     $msg = sprintf("%s=>%s", $msg, $callerInfo);
   }
 
-  public static function log($msg, array $context = [], string $logFile = "log"): void
+  public static function log($msg, array $context = [], string $channel = "app"): void
   {
-    self::__callStatic("info", [$msg, $context, $logFile]);
+    self::__callStatic("info", [$msg, $context, $channel, false]);
   }
 
-  public static function error($msg, array $context = [], string $logFile = "log"): void
+  public static function error($msg, array $context = [], string $channel = "app"): void
   {
-    self::debugBackTrace($msg);
-    self::__callStatic("error", [$msg, $context, $logFile]);
+    self::__callStatic("error", [$msg, $context, $channel, true]);
   }
 
-  public static function debug($msg, array $context = [], string $logFile = "log"): void
+  public static function debug($msg, array $context = [], string $channel = "app"): void
   {
-    self::debugBackTrace($msg);
-    self::__callStatic("debug", [$msg, $context, $logFile]);
+    self::__callStatic("debug", [$msg, $context, $channel, true]);
   }
 
-  public static function critical($msg, array $context = [], string $logFile = "log"): void
+  public static function critical($msg, array $context = [], string $channel = "app"): void
   {
-    self::debugBackTrace($msg);
-    self::__callStatic("critical", [$msg, $context, $logFile]);
+    self::__callStatic("critical", [$msg, $context, $channel, true]);
   }
 }
