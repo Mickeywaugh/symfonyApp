@@ -16,7 +16,7 @@ use Symfony\Component\Filesystem\Filesystem;
 class BaseCommand extends Command
 {
   protected $pidFile = 'var/run/basecmd.pid';
-  protected $logFileName = 'basecmd';
+  protected $channelName = 'basecmd';
   protected $io;
   protected $verbose = false;
   public function __construct()
@@ -136,7 +136,7 @@ class BaseCommand extends Command
     }
     $date = date('Y-m-d H:i:s');
     $this->verbose && $this->io->note(sprintf('%s %s', $date, $message));
-    Logger::log($message, logFile: $this->logFileName);
+    Logger::log($message, channel: $this->channelName);
   }
 
   protected function info($message)
@@ -146,7 +146,7 @@ class BaseCommand extends Command
     }
     $date = date('Y-m-d H:i:s');
     $this->verbose && $this->io->info(sprintf('%s %s', $date, $message));
-    Logger::log($message, logFile: $this->logFileName);
+    Logger::log($message, channel: $this->channelName);
   }
 
   protected function warning($message)
@@ -156,7 +156,7 @@ class BaseCommand extends Command
     }
     $date = date('Y-m-d H:i:s');
     $this->verbose && $this->io->warning(sprintf('%s %s', $date, $message));
-    Logger::log($message, logFile: $this->logFileName);
+    Logger::log($message, channel: $this->channelName);
   }
 
   protected function error($message, string $logName = "")
@@ -164,10 +164,10 @@ class BaseCommand extends Command
     if (!$message) {
       return;
     }
-    $logName = $logName ?: $this->logFileName;
+    $logName = $logName ?: $this->channelName;
     $date = date('Y-m-d H:i:s');
     $this->verbose && $this->io->error(sprintf('%s %s', $date, $message));
-    Logger::error($message, logFile: $this->logFileName);
+    Logger::error($message, channel: $this->channelName);
   }
 
   protected function success($message, string $logName = "")
@@ -175,10 +175,10 @@ class BaseCommand extends Command
     if (!$message) {
       return;
     }
-    $logName = $logName ?: $this->logFileName;
+    $logName = $logName ?: $this->channelName;
     $date = date('Y-m-d H:i:s');
     $this->verbose && $this->io->success(sprintf('%s %s', $date, $message));
-    Logger::log($message, logFile: $this->logFileName);
+    Logger::log($message, channel: $this->channelName);
   }
 
   /**
