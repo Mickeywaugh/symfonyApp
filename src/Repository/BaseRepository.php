@@ -9,6 +9,17 @@ use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use ReflectionClass;
 
+/**
+ * @extends ServiceEntityRepository<Entity>
+ * @method Entity|null findOrCreate($where, $props=[])
+ * @method Entity|null page(array $criteria, array $orderBy = null)
+ * @method Entity|null flush(array $criteria, array $orderBy = null)
+ * @method Entity|null update($where, $props=[])
+ * @method Entity|null delete(array $ids, $softDelete = true)
+ * @method ["total","list"=>[]]    page($where, array $orderBy = null, $limit = null, $offset = null)
+ * @method ["total","list"=>Entity[]]     entityPage(array $where, array $orderBy = null, $limit = null, $offset = null)
+ * @method Entity[]    findEntities($where,$orderBy = null)
+ */
 abstract class BaseRepository extends ServiceEntityRepository
 {
 
@@ -109,6 +120,7 @@ abstract class BaseRepository extends ServiceEntityRepository
                 array_push($properties, $mapping['fieldName']);
             }
         }
+        // Logger::log($properties);
         return $properties;
     }
 
@@ -338,7 +350,7 @@ abstract class BaseRepository extends ServiceEntityRepository
      */
     public function search($where = [], $orderBy = null, $limit = null, $offset = null)
     {
-        $this->wheres($where)->orderBy($orderBy);
+        $this->parseWhere($where)->orderBy($orderBy);
         //在未添加分页参数前复制qb对象以获取总数；
         // 获取总数
         $totalCount = $this->getCount(true);
@@ -350,7 +362,7 @@ abstract class BaseRepository extends ServiceEntityRepository
     public function findEntities($where = [], $orderBy = null)
     {
         try {
-            $this->wheres($where)->orderBy($orderBy);
+            $this->parseWhere($where)->orderBy($orderBy);
             return $this->getResult();
         } catch (\Exception $e) {
             Logger::critical($e->getMessage());
@@ -365,7 +377,7 @@ abstract class BaseRepository extends ServiceEntityRepository
      */
     public function getOptionList($kv = ["id", "name"], $where = [], $orderBy = null): ?array
     {
-        $this->wheres($where)->orderBy($orderBy);
+        $this->parseWhere($where)->orderBy($orderBy);
         // 如果$kv是字符串，则转换为数组
         if (is_string($kv)) {
             $kv = explode(",", $kv);
@@ -407,8 +419,8 @@ abstract class BaseRepository extends ServiceEntityRepository
 
     public function getLatest(array $filter, array $orderBy = ["id" => "DESC"])
     {
-        if ($this->debug) Logger::log($this->wheres($filter)->qb->setMaxResults(1)->getQuery()->getDQL());
-        return $this->orderBy($orderBy)->wheres($filter)->qb->setMaxResults(1)->getQuery()->getOneOrNullResult();
+        if ($this->debug) Logger::log($this->parseWhere($filter)->qb->setMaxResults(1)->getQuery()->getDQL());
+        return $this->orderBy($orderBy)->parseWhere($filter)->qb->setMaxResults(1)->getQuery()->getOneOrNullResult();
     }
 
     public function findOrCreate(array $filter, array $props = [])
@@ -456,11 +468,13 @@ abstract class BaseRepository extends ServiceEntityRepository
         return $this;
     }
 
+
     /**
-     * @param array $where eg:["fieldName1"=>["LIKE"=>"keyword"],"fileName2"=>"value2"]
+     * @param array $where
+     * @param ["field"=>"value"],[">="=>""],["NOT_NULL"=>true],["BETWEEN"=>["start","end"]]
      * @return $this
      */
-    public function wheres(array $where): self
+    public function parseWhere(array $where): self
     {
         if (empty($where)) return $this;
         // 处理模糊搜索条件
@@ -468,9 +482,10 @@ abstract class BaseRepository extends ServiceEntityRepository
             $paramName = sprintf("value%d", $this->whereCounter);
             $start = sprintf("start%d",  $this->whereCounter);
             $end = sprintf("end%d",  $this->whereCounter);
-            //判断$where的数组的结构，只支持key=>value的形式, 
+            //判断$where的数组的结构，只支持key=>value的形式, 如果value为数组，则认为是非精确查询条件，默认为数组第1个元素为操作符，数组第2个元素为匹配条件
             $rfield = self::rebuildField($field);
-            if (is_array($expr)) { //$expr为单个数组,
+            if (is_array($expr)) {
+                // list($op, $condition) = $expr;
                 $op = strtoupper(key($expr));
                 $condition = current($expr);
                 if (!in_array($op, $this->expr)) {
@@ -541,13 +556,13 @@ abstract class BaseRepository extends ServiceEntityRepository
     public function whereOr($where): static
     {
         $this->whereCond = "OR";
-        return $this->wheres($where);
+        return $this->parseWhere($where);
     }
 
     public function whereAnd($where): static
     {
         $this->whereCond = "AND";
-        return $this->wheres($where);
+        return $this->parseWhere($where);
     }
 
     private function setQbWhere($argv)
@@ -774,11 +789,7 @@ abstract class BaseRepository extends ServiceEntityRepository
         }
     }
 
-    /**
-     * flush实体至数据库
-     * @param array $entities 数组或单个实体
-     * @return bool
-     */
+    // flush实体至数据库
     public function flush($entities)
     {
         if (!$this->em->isOpen()) {
@@ -807,10 +818,6 @@ abstract class BaseRepository extends ServiceEntityRepository
         }
     }
 
-
-    /**
-     * 打开debug模式
-     */
     public function debug(bool $sql = true): static
     {
         $this->debug = true;
@@ -818,9 +825,6 @@ abstract class BaseRepository extends ServiceEntityRepository
         return $this;
     }
 
-    /**
-     * 打印sql还是dql
-     */
     private function logSql($qb = null): static
     {
         if (!$qb) {
