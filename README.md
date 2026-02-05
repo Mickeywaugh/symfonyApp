@@ -15,3 +15,4 @@ Repository类继承此类后可直接使用BaseRepository类中的方法进行�
 12. 基于Monolog/Monolog,封装了Logger类,实现静态方法输出日志功能;
 13. Redis,Symfony/Mailer等配置存在.env中，请自行修改对应配置的值。
 14. 创建实体请参照Entity/UserEntity，创建仓库请参照Repository/UserRepository;如果使用php bin/console make:entity命令创建实体，请将实体继承BaseEntity类，参照Enntity/UserEntity和Repository/UserRepository类对entity和repository进行相应的修改;
+15. 增加Message类实现异步消息功能，请自行修改环境变量.env中的MESSENGER_TRANSPORT_DSN配置项。使用php bin/console messenger:consume async命令启动异步消息服务。在控制器的使用请使用容器注入 Symfony\Component\Messenger\MessageBusInterface接口，创建异步消息实体new AsyncMsg();
