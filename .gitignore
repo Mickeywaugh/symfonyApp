@@ -1,5 +1,4 @@
 
-###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
 /.env.*.local
@@ -10,4 +9,3 @@
 /bin/console
 symfony.lock
 composer.lock
-###< symfony/framework-bundle ###
