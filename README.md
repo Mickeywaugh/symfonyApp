@@ -1,18 +1,19 @@
-本项目为个人常用的symfony框架项目库。
+This project is a personal commonly used Symfony framework project library.
+
 1. Symfony 7.3.x + Doctrine 3.5.x;
-2. 封装了BaseCommand 基类，实现命令行功能，基本的start/stop操作外，还支持自定义方法；
-3. 封装了BaseController基类，success/error方法，实现ajax返回数据功能.
-4. 封装了BaseEntity基类,Entity继承此类,可以使用一些快捷方法来设置属性和将属性转换成数组;
-5. 封装了BaseRepository基类,在Doctrine的ServiceEntityRepository类基础上，实现了较多的常用方法:
-如page,entityPage,list,findEntities,getOptionList,findOrCreate,getCount,getFirst,wheres,create,batchCreate,update,flush等,这些方法的用法请请查看BaseRepository类中的方法注释,参数命名能反应其所代表的意义;
-Repository类继承此类后可直接使用BaseRepository类中的方法进行数据库操作;
-6. 封装了BaseService基类.
-7. 封装了MailerService类,实现邮件发送功能;
-8. 封装了RedisService类,实现基本的redis操作;
-9. 封装了OscService类,支持aws s3存储;
-10. 基于Doctrine/DBAL封装了DbalService类,实现直接使用sql对数据库进行操作;
-11. 基于mpdf/mpdf和twig/twig,封装了PdfService类,实现twig生成html并生成pdf文档的功能;
-12. 基于Monolog/Monolog,封装了Logger类,实现静态方法输出日志功能;
-13. Redis,Symfony/Mailer等配置存在.env中，请自行修改对应配置的值。
-14. 创建实体请参照Entity/UserEntity，创建仓库请参照Repository/UserRepository;如果使用php bin/console make:entity命令创建实体，请将实体继承BaseEntity类，参照Enntity/UserEntity和Repository/UserRepository类对entity和repository进行相应的修改;
-15. 增加Message类实现异步消息功能，请自行修改环境变量.env中的MESSENGER_TRANSPORT_DSN配置项。使用php bin/console messenger:consume async命令启动异步消息服务。在控制器的使用请使用容器注入 Symfony\Component\Messenger\MessageBusInterface接口，创建异步消息实体new AsyncMsg();
+2. Encapsulated BaseCommand base class to implement command-line functionality, supporting basic start/stop operations as well as custom methods;
+3. Encapsulated BaseController base class with success/error methods to implement AJAX data return functionality;
+4. Encapsulated BaseEntity base class; entities inheriting this class can use some shortcut methods to set properties and convert properties into arrays;
+5. Encapsulated BaseRepository base class, which extends Doctrine's ServiceEntityRepository class and implements many commonly used methods:
+   Such as page, entityPage, list, findEntities, getOptionList, findOrCreate, getCount, getFirst, wheres, create, batchCreate, update, flush, etc. Please refer to the method comments in the BaseRepository class for usage. Parameter names reflect their meanings;
+   Repository classes that inherit this class can directly use the methods in the BaseRepository class for database operations;
+6. Encapsulated BaseService base class;
+7. Encapsulated MailerService class to implement email sending functionality;
+8. Encapsulated RedisService class to implement basic Redis operations;
+9. Encapsulated OscService class to support AWS S3 storage;
+10. Based on Doctrine/DBAL, encapsulated DbalService class to implement direct SQL database operations;
+11. Based on mpdf/mpdf and twig/twig, encapsulated PdfService class to implement generating HTML from Twig and creating PDF documents;
+12. Based on Monolog/Monolog, encapsulated Logger class to implement static method log output functionality;
+13. Configurations for Redis, Symfony/Mailer, etc., are stored in .env; please modify the corresponding configuration values as needed;
+14. For creating entities, please refer to Entity/UserEntity; for creating repositories, please refer to Repository/UserRepository; if using the php bin/console make:entity command to create entities, please have the entity inherit the BaseEntity class and modify the entity and repository accordingly by referring to the Enntity/UserEntity and Repository/UserRepository classes;
+15. Added Message class to implement asynchronous messaging functionality; please modify the MESSENGER_TRANSPORT_DSN configuration item in the environment variable .env file. Use the php bin/console messenger:consume async command to start the asynchronous messaging service. In controllers, please use container injection of the Symfony\Component\Messenger\MessageBusInterface interface, and create asynchronous message entities with new AsyncMsg();
